@@ -27,7 +27,7 @@ def get_u(n, coin):
 
 '''
 Inputs:
-    psi : state vector
+    vector : state vector
     n : number of nodes
     coin : coin operator
     n_step : number of steps
@@ -38,47 +38,47 @@ Inputs:
                     we want to apply on position i
 Output : the state vector of the walker after n_step steps
 '''
-def quantum_walk(psi, n, coin, n_step, position_dependent = False, coin_list = []):
+def quantum_walk(vector, n, coin, n_step, position_dependent = False, coin_list = []):
     s = get_s(n)
     if(position_dependent):
-        u = get_u_multiple_coin(n, coin_list)
+        u = get_u_position_dependent(n, coin_list)
     else:
         u = get_u(n, coin)
     q = np.matmul(s,u)
     f = np.linalg.matrix_power(q, n_step)
-    return np.matmul(f, psi)
+    return np.matmul(f, vector)
 
 '''
 Inputs :
-    psi : state vector
+    vector : state vector
     n : number of nodes
 Output : dictionnary containing the probability distribution of the positions
 '''
-def decode(psi, n):
+def decode(vector, n):
     prob_distrib = {}
     for i in range(n):
-        if(psi[2*i][0] != 0):
-            prob_distrib[i] = np.abs(psi[2*i][0])**2
-        if(psi[2*i + 1][0] != 0):
+        if(vector[2*i][0] != 0):
+            prob_distrib[i] = np.abs(vector[2*i][0])**2
+        if(vector[2*i + 1][0] != 0):
             if i in prob_distrib.keys():
-                prob_distrib[i] += np.abs(psi[2*i +1][0])**2
+                prob_distrib[i] += np.abs(vector[2*i +1][0])**2
             else:
-                prob_distrib[i] = np.abs(psi[2*i +1][0])**2
+                prob_distrib[i] = np.abs(vector[2*i +1][0])**2
     return prob_distrib
 
 '''
 Input :
-    psi : state vector
+    vector : state vector
 Output : the state vector normalized
 '''
-def normalize(psi):
+def normalize(vector):
     norm = 0
-    for i in psi:
+    for i in vector:
         norm += np.abs(i[0])**2
     if(norm != 0):
-        psi /= np.sqrt(norm)
-    return psi
-    
+        vector /= np.sqrt(norm)
+    return vector
+
 '''
 Inputs :
     n : number of nodes
@@ -87,12 +87,12 @@ Inputs :
 Output : the state vector normalized
 '''
 def init(n, pos_init, coin_init):
-    psi = np.zeros((2*n, 1))
+    vector = np.zeros((2*n, 1))
     coin_len = len(coin_init)
     for i in range(len(pos_init)):
         for j in range(coin_len):
-            psi[(coin_len*i)+j] = pos_init[i] * coin_init[j]
-    return normalize(psi)
+            vector[(coin_len*i)+j] = pos_init[i] * coin_init[j]
+    return normalize(vector)
 
 '''
 Inputs :
@@ -112,26 +112,25 @@ def plot_distrib(n, prob_distrib):
     plt.xlabel("Position")
     plt.ylabel("Probabilities")
     plt.bar(x, y, width = 0.5, color='blue')
-
+    
 '''
 Inputs :
     n : number of nodes
     coin_list : coin_list[i] contains the coin operator we want to apply on position i
 Output : matrix U applying the coins operators on the coin space and the identity on the position space
 '''
-def get_u_multiple_coin(n, coin_list):
+def get_u_position_dependent(n, coin_list):
     coin_operators = np.zeros((2*n, 2*n))
     for i in range(n):
         a = np.zeros((n, n))
         a[i][i] = 1
         coin_operators += np.kron(a,coin_list[i])
     return coin_operators
-    
-    
-'''
-EXAMPLE
 
-n = 2 # number of nodes (must be a power of 2)
+'''
+EXAMPLE with no position-dependent coin operator
+
+n = 4 # number of nodes (must be a power of 2)
 n_step = 1 # number of steps
 
 coin = (1/np.sqrt(2)) * np.array([[1,1], [1, -1]]) # Hadamard coin
@@ -139,9 +138,34 @@ coin = (1/np.sqrt(2)) * np.array([[1,1], [1, -1]]) # Hadamard coin
 pos_init = [1,0] # the walker starts on the node 0
 coin_init = [1,0] # |0>
 
-psi = init(n, pos_init, coin_init) # state vector of the walk
+vector = init(n, pos_init, coin_init) # state vector of the walk
 
-psi_after_walk = quantum_walk(psi, n, coin, n_step)
+vector_after_walk = quantum_walk(vector, n, coin, n_step)
 
-prob_distrib = decode(psi_after_walk,n)
+prob_distrib = decode(vector_after_walk,n)
+'''
+
+'''
+EXAMPLE with position-dependent coin operator
+
+n = 8 # number of nodes (must be a power of 2)
+n_step = 13 # number of steps
+
+coin_list = []
+Hadamard = np.array([[1,1],[1,-1]])/np.sqrt(2)
+Z = np.array([[1,0],[0,-1]])
+for i in range(n):
+    if i % 2 == 0:
+        coin_list.append(Hadamard)
+    else:
+        coin_list.append(Z)
+
+pos_init = [1,0] # the walker starts on the node 0
+coin_init = [1,0] # |0>
+
+vector = init(n, pos_init, coin_init) # state vector of the walk
+
+vector_after_walk = quantum_walk(vector, n, coin, n_step, position_dependent = True, coin_list = coin_list)
+
+prob_distrib = decode(vector_after_walk,n)
 '''
