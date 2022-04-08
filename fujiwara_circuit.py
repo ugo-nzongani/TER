@@ -5,7 +5,7 @@ from math import pow, sqrt
 import numpy as np
 import matplotlib.pyplot as plt
 from qiskit.visualization import plot_histogram
-from qiskit.tools.monitor import job monitor
+from qiskit.tools.monitor import job_monitor
 # %matplotlib inline
 # %config InlineBackend.figure_format = 'svg'
 
@@ -122,10 +122,31 @@ def get_position_dependent_gate(n, coin_list):
         qc.append(gate.control(n), qubits)
     return qc
 
+'''
+Inputs :
+    qc : quantum circuit
+    n_shots : number of iteration
+Output : the measurement outcomes obtained with a simulation
+'''
+def execute_simulation(qc, n_shots):
+    '''
+    backend = BasicAer.get_backend('qasm_simulator')
+    #job = execute(qc, backend, shots=n_shots)
+    #counts = dict(job.result().get_counts(qc))
+    job = execute(qc, backend=backend, shots=n_shots)
+    counts = dict(job.result().get_counts(qc))
+    '''
+    backend_sim = Aer.get_backend('qasm_simulator')
+    job_sim = backend_sim.run(transpile(qc, backend_sim), shots=n_shots)
+    result_sim = job_sim.result()
+    counts = result_sim.get_counts(qc)
+    return counts
+
+# +
 # Circuit with no position-dependent coin operator
+
 n = 3 # number of qubits encoding the position
 n_step = 13 # number of steps
-
 circ1 = circuit(n, n_step)
 
 # Circuit with position-dependent coin operator
@@ -137,46 +158,5 @@ for i in range(int(pow(2,n))):
         coin_list.append(Hadamard)
     else:
         coin_list.append(Z)
-
+        
 circ2 = circuit(n, n_step, position_dependent=True, coin_list=coin_list)
-
-'''
-Inputs :
-    qc : quantum circuit
-    n_shots : number of iteration
-Output : the measurement outcomes obtained with a simulation
-'''
-def execute_simulation(qc, n_shots):
-    '''
-    backend = BasicAer.get_backend('qasm_simulator')
-    #job = execute(circ, backend, shots=n_shots)
-    #counts = dict(job.result().get_counts(circ))
-    job = execute(circ, backend=backend, shots=n_shots)
-    counts = dict(job.result().get_counts(circ))
-    '''
-    backend_sim = Aer.get_backend('qasm_simulator')
-    job_sim = backend_sim.run(transpile(circ, backend_sim), shots=n_shots)
-    result_sim = job_sim.result()
-    counts = result_sim.get_counts(circ)
-    return counts
-
-'''
-Inputs :
-    qc : quantum circuit
-    n_shots : number of iteration
-    device_name : IBM quantum device we want to use
-    key : IBM API key
-Output : measurement outcomes obtained with a real quantum computer
-'''
-def execute_real(qc, n_shots, device_name, key):
-    IBMQ.save_account(key, overwrite =True)
-    IBMQ.load_account()
-    provider = IBMQ.get_provider(hub = 'ibm−q')
-    device = provider.get_backend (device_name)
-    job = execute(qc, backend=device, shots = n_shots)
-    job_monitor(job)
-    device_result = job.result()
-    counts = device_result.get_counts(qc)
-    return counts
-
-
