@@ -173,7 +173,7 @@ def execute_real(qc, n_shots, device_name, key):
     IBMQ.load_account()
     provider = IBMQ.get_provider(hub = 'ibm−q')
     device = provider.get_backend (device_name)
-    job = execute(qc, backend=device, shots = 1024)
+    job = execute(qc, backend=device, shots = n_shots)
     job_monitor(job)
     device_result = job.result()
     counts = device_result.get_counts(qc)
