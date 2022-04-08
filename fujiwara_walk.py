@@ -112,7 +112,7 @@ def plot_distrib(n, prob_distrib):
     plt.xlabel("Position")
     plt.ylabel("Probabilities")
     plt.bar(x, y, width = 0.5, color='blue')
-    
+
 '''
 Inputs :
     n : number of nodes
