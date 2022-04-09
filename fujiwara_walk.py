@@ -130,8 +130,8 @@ def get_u_position_dependent(n, coin_list):
 '''
 EXAMPLE with no position-dependent coin operator
 
-n = 4 # number of nodes (must be a power of 2)
-n_step = 1 # number of steps
+n = 8 # number of nodes (must be a power of 2)
+n_step = 2 # number of steps
 
 coin = (1/np.sqrt(2)) * np.array([[1,1], [1, -1]]) # Hadamard coin
 
@@ -143,6 +143,7 @@ vector = init(n, pos_init, coin_init) # state vector of the walk
 vector_after_walk = quantum_walk(vector, n, coin, n_step)
 
 prob_distrib = decode(vector_after_walk,n)
+plot_distrib(n, prob_distrib)
 '''
 
 '''

@@ -142,14 +142,19 @@ def execute_simulation(qc, n_shots):
     counts = result_sim.get_counts(qc)
     return counts
 
-# +
-# Circuit with no position-dependent coin operator
+'''
+EXAMPLE with no position-dependent coin operator
 
 n = 3 # number of qubits encoding the position
-n_step = 13 # number of steps
+n_step = 2 # number of steps
 circ1 = circuit(n, n_step)
+res = execute_simulation(circ1, 1024)
+plot_histogram(res)
+'''
 
-# Circuit with position-dependent coin operator
+'''
+EXAMPLE with position-dependent coin operator
+
 coin_list = []
 Hadamard = np.array([[1,1],[1,-1]])/np.sqrt(2)
 Z = np.array([[1,0],[0,-1]])
@@ -160,3 +165,4 @@ for i in range(int(pow(2,n))):
         coin_list.append(Z)
         
 circ2 = circuit(n, n_step, position_dependent=True, coin_list=coin_list)
+'''
